@@ -142,7 +142,8 @@ int main()
 	// i 자체가 const로 정의되어 있을 때는 사용할 때 매우 주의 필요! (undefined behavior)
 
 	/* const_cast를 쓰는 좋은 예 */
-	const String& s("abc");
+	String& s("abc");
+	s[0] = 'a';
 	cout << s[0] << endl;
 }
 
