@@ -1,6 +1,6 @@
 /*
-  01. »ê¼ú ¿¬»êÀÚ ¿À¹ö·Îµù & Friend
-  friend·Î ¼±¾ğµÈ ´Ù¸¥ Å¬·¡½ºÀÇ private ¹× protected ¸â¹ö¿¡ Á¢±Ù °¡´É
+  01. ì‚°ìˆ  ì—°ì‚°ì ì˜¤ë²„ë¡œë”© & Friend
+  friendë¡œ ì„ ì–¸ëœ ë‹¤ë¥¸ í´ë˜ìŠ¤ì˜ private ë° protected ë©¤ë²„ì— ì ‘ê·¼ ê°€ëŠ¥
 */
 # include <iostream>
 
@@ -14,7 +14,7 @@ public:
   float z;
 
   Vector operator+() const
-    // ÀÏ¹İ Æ÷ÀÎÅÍ -> const´Â °¡´ÉÇÏÁö¸¸ ±× ¹İ´ë´Â ¾È µÇ´Ï±î ºÙ¿©Áà¼­ ³ª»Ü°Ô ¾øÀ½!
+    // ì¼ë°˜ í¬ì¸í„° -> constëŠ” ê°€ëŠ¥í•˜ì§€ë§Œ ê·¸ ë°˜ëŒ€ëŠ” ì•ˆ ë˜ë‹ˆê¹Œ ë¶™ì—¬ì¤˜ì„œ ë‚˜ì ê²Œ ì—†ìŒ!
   {
     return Vector{ x, y, z };
     // return *this;
@@ -38,7 +38,7 @@ public:
     Vector temp = *this;
     ++(*this);
     return temp;
-    // ¿øº»À» returnÇÑ ÀÌÈÄ¿¡ ++ÇØÁÖ´Â ´À³¦
+    // ì›ë³¸ì„ returní•œ ì´í›„ì— ++í•´ì£¼ëŠ” ëŠë‚Œ
   }
 
   void print()
@@ -62,7 +62,7 @@ int main()
 }
 
 /*
-  02. ¿¬»êÀÚ ¿À¹ö·Îµù (ºñ±³ & °ü°è)
+  02. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ë¹„êµ & ê´€ê³„)
 */
 # include <iostream>
 # include <cstring>
@@ -92,8 +92,8 @@ public:
     return !(*this == s);
   }
 
-  // ¿¹Àü C++¿¡¼­´Â >, <, ==, != ¿¬»êÀÚµéÀ» ¸ğµÎ Á¤ÀÇÇØÁà¾ßÇß´Âµ¥
-  // Modern C++¿¡¼­´Â strong_ordering°ú <=>·Î ¸ğµÎ ÇØ°á °¡´É
+  // ì˜ˆì „ C++ì—ì„œëŠ” >, <, ==, != ì—°ì‚°ìë“¤ì„ ëª¨ë‘ ì •ì˜í•´ì¤˜ì•¼í–ˆëŠ”ë°
+  // Modern C++ì—ì„œëŠ” strong_orderingê³¼ <=>ë¡œ ëª¨ë‘ í•´ê²° ê°€ëŠ¥
   strong_ordering operator<=>(const String& s) const
   {
     int result = strcmp(_chars, s._chars);
@@ -111,22 +111,22 @@ int main()
   String s1("a");
 
   if ((s0 <=> s1) > 0) cout << "!!" << endl;
-  // s1°ú "b"¸¦ ºñ±³ÇÏ°í ½ÍÀ¸¸é Å¬·¡½º ³»ºÎ¿¡ friend ÇÔ¼ö ¸¸µé¾î¾ß!
+  // s1ê³¼ "b"ë¥¼ ë¹„êµí•˜ê³  ì‹¶ìœ¼ë©´ í´ë˜ìŠ¤ ë‚´ë¶€ì— friend í•¨ìˆ˜ ë§Œë“¤ì–´ì•¼!
 }
 
 /*
-  03. ¿¬»êÀÚ ¿À¹ö·Îµù (³í¸® ¿¬»ê)
-  AND³ª OR ¿¬»êÀº short evaluationÀÎµ¥
-  friend ÇÔ¼ö·Î ±¸ÇöÇÏ¸é ÀÎÀÚ¸¦ µÑ ´Ù Æò°¡ÇÔ.
-  -> ±âÁ¸ÀÇ ³í¸® ¿¬»êÀÚ¿Í Æ¯¼ºÀÌ ´Ş¶óÁö±â¿¡ ²À ±¸ÇöÀÌ ÇÊ¿äÇÑÁö °í¹ÎÇÏÀÚ
+  03. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ë…¼ë¦¬ ì—°ì‚°)
+  ANDë‚˜ OR ì—°ì‚°ì€ short evaluationì¸ë°
+  friend í•¨ìˆ˜ë¡œ êµ¬í˜„í•˜ë©´ ì¸ìë¥¼ ë‘˜ ë‹¤ í‰ê°€í•¨.
+  -> ê¸°ì¡´ì˜ ë…¼ë¦¬ ì—°ì‚°ìì™€ íŠ¹ì„±ì´ ë‹¬ë¼ì§€ê¸°ì— ê¼­ êµ¬í˜„ì´ í•„ìš”í•œì§€ ê³ ë¯¼í•˜ì
 */
 
 /*
-  04. ¿¬»êÀÚ ¿À¹ö·Îµù (ºñÆ® ¿¬»ê)
+  04. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ë¹„íŠ¸ ì—°ì‚°)
   ~, &, |, ^, >>, <<
 */
 # include <iostream>
-# include <string> // stoi ÇÔ¼ö »ç¿ë
+# include <string> // stoi í•¨ìˆ˜ ì‚¬ìš©
 
 using namespace std;
 
@@ -146,7 +146,7 @@ public:
   {
     os << v.x << " " << v.y << " " << v.z << " ";
     return os;
-    // void¸¦ ¸®ÅÏÇÏ¸é cout << v ±îÁö¸¸ ÁøÇà°¡´É
+    // voidë¥¼ ë¦¬í„´í•˜ë©´ cout << v ê¹Œì§€ë§Œ ì§„í–‰ê°€ëŠ¥
   }
 
   friend istream& operator>>(istream& is, Vector& v)
@@ -165,15 +165,15 @@ public:
     return is;
   }
 
-  // ~ ¿¬»ê
+  // ~ ì—°ì‚°
   Vector operator~() const
   {
     return Vector(~x, ~y, ~z);
   }
 
-  // & ¿¬»ê (&´Â ¾ÕÀÇ Á¶°Ç½ÄÀÌ false¿©µµ µÚÀÇ Á¶°Ç½ÄÀ» È®ÀÎ)
-  // Á¶°ÇÀÌ nullÀÏ ¼ö ÀÖ°Å³ª.. ÇÑ »óÈ² µî¿¡ È°¿ë °¡´É
-  // | µµ ¸¶Âù°¡ÁöÀÓ!
+  // & ì—°ì‚° (&ëŠ” ì•ì˜ ì¡°ê±´ì‹ì´ falseì—¬ë„ ë’¤ì˜ ì¡°ê±´ì‹ì„ í™•ì¸)
+  // ì¡°ê±´ì´ nullì¼ ìˆ˜ ìˆê±°ë‚˜.. í•œ ìƒí™© ë“±ì— í™œìš© ê°€ëŠ¥
+  // | ë„ ë§ˆì°¬ê°€ì§€ì„!
   Vector operator&(const Vector& v) const
   {
     return Vector(x & v.x, y & v.y, z & v.z);
@@ -192,8 +192,8 @@ int main()
 }
 
 /*
-  05. ¿¬»êÀÚ ¿À¹ö·Îµù (Ã·ÀÚ ¿¬»êÀÚ)
-  nums[1] <- ÀÌ·± ´ë°ıÈ£ ¿¬»êÀ» Ã·ÀÚ ¿¬»êÀÚ¶ó°í ÇÔ!
+  05. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ì²¨ì ì—°ì‚°ì)
+  nums[1] <- ì´ëŸ° ëŒ€ê´„í˜¸ ì—°ì‚°ì„ ì²¨ì ì—°ì‚°ìë¼ê³  í•¨!
 */
 # include <iostream>
 # include <cstring>
@@ -294,8 +294,8 @@ int main()
 {
   Vector v{ 1, 2, 3 };
   v[1] = 100;
-  // [] operator°¡ float¸¦ ¸®ÅÏÇÏ±â ¶§¹®¿¡ µ¿ÀÛÇÏÁö ¾ÊÀ½
-  // float&¸¦ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÏ¸é °¡´ÉÇÏÁö¿ä!
+  // [] operatorê°€ floatë¥¼ ë¦¬í„´í•˜ê¸° ë•Œë¬¸ì— ë™ì‘í•˜ì§€ ì•ŠìŒ
+  // float&ë¥¼ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•˜ë©´ ê°€ëŠ¥í•˜ì§€ìš”!
 
   String s = "huhu";
   s[0] = 'H';
@@ -310,7 +310,7 @@ int main()
 }
 
 /*
-  06. ¿¬»êÀÚ ¿À¹ö·Îµù (´ëÀÔ ¿¬»êÀÚ, º¹»ç »ı¼ºÀÚ)
+  06. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ëŒ€ì… ì—°ì‚°ì, ë³µì‚¬ ìƒì„±ì)
 */
 # include <iostream>
 # include <cstring>
@@ -326,28 +326,27 @@ private:
   char* _name;
 
 public:
-  Person() {}
+  Person() { _name = nullptr; }
   Person(float weight, float height, const char* name)
-    //: _weight(weight), _height(height), _name{}
     : _weight(weight), _height(height), _name(new char[strlen(name) + 1])
   {
     strcpy(_name, name);
   }
-  // ¼ÂÀÇ NameÀÌ °¡¸®Å°´Â charÀÇ ÁÖ¼Ò°ªÀÌ µ¿ÀÏÇÏ±â ¶§¹®¿¡
-  // ¸Ş¸ğ¸® ÇØÁöÇÒ ¶§ ¹®Á¦°¡ »ı±è (ÀÌ¹Ì deleteÇÑ °ÍÀ» ¶Ç Á¢±ÙÇØ¼­ Áö¿ì°Ô µÊ)
-  // ¾èÀº º¹»ç¸¦ ÇØ¼­ »ı±â´Â ¹®Á¦!
+  // ì…‹ì˜ Nameì´ ê°€ë¦¬í‚¤ëŠ” charì˜ ì£¼ì†Œê°’ì´ ë™ì¼í•˜ê¸° ë•Œë¬¸ì—
+  // ë©”ëª¨ë¦¬ í•´ì§€í•  ë•Œ ë¬¸ì œê°€ ìƒê¹€ (ì´ë¯¸ deleteí•œ ê²ƒì„ ë˜ ì ‘ê·¼í•´ì„œ ì§€ìš°ê²Œ ë¨)
+  // ì–•ì€ ë³µì‚¬ë¥¼ í•´ì„œ ìƒê¸°ëŠ” ë¬¸ì œ! -> ì•„ë˜ì˜ ë³µì‚¬ ìƒì„±ì, ëŒ€ì… ì—°ì‚°ì ì˜¤ë²„ë¡œë”©ìœ¼ë¡œ í•´ê²°
 
-  Person(Person& person)
+  Person(Person& person) // ë³µì‚¬ ìƒì„±ì
     : Person(person._weight, person._height, person._name)
   {
     cout << "It is Copy!" << endl;
   }
 
-  Person& operator=(const Person& person)
+  Person& operator=(const Person& person) // ëŒ€ì… ì—°ì‚°ì
   {
     _weight = person._weight;
     _height = person._height;
-    // delete[] _name;
+    if (_person != nullptr) delete[] _name;
 
     _name = new char[strlen(person._name) + 1];
     strcpy(_name, person._name);
@@ -375,19 +374,19 @@ void func(Person person)
 int main()
 {
   Person person0{ 45.f, 153.f, "Json" };
-  Person person1 = person0; // º¹»ç »ı¼ºÀÚ
+  Person person1 = person0; // ë³µì‚¬ ìƒì„±ì. Person person1(person0); 
   Person person2;
-  person2 = person0; // ´ëÀÔ ¿¬»êÀÚ, ÇÒ´ç ¿¬»êÀÚ
+  person2 = person0; // ëŒ€ì… ì—°ì‚°ì, í• ë‹¹ ì—°ì‚°ì
 
   person0.print();
   person1.print();
   person2.print();
 
-  func(person2); // È£ÃâÇØº¸¸é º¹»ç°¡ ÀÏ¾î³ª´Â °ÍÀ» ¾Ë ¼ö ÀÖÀ½!
+  func(person2); // í˜¸ì¶œí•´ë³´ë©´ ë³µì‚¬ê°€ ì¼ì–´ë‚˜ëŠ” ê²ƒì„ ì•Œ ìˆ˜ ìˆìŒ!
 }
 
 /*
-  07. ¿¬»êÀÚ ¿À¹ö·Îµù (º¯È¯ »ı¼ºÀÚ, explicit)
+  07. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ë³€í™˜ ìƒì„±ì, explicit)
 */
 # include <iostream>
 
@@ -407,7 +406,7 @@ public:
   {
     for (const char* str : strs) cout << str << endl;
   }
-  // if (s) <- ÀÌ·± °Í ÇÏ°í ½ÍÀ½!
+  // if (s) <- ì´ëŸ° ê²ƒ í•˜ê³  ì‹¶ìŒ!
   explicit operator bool() const
   {
     return strlen(_chars) > 0;
@@ -419,17 +418,17 @@ private:
 
 int main()
 {
-  // String s = "abc"; ¾Ï½ÃÀû Çüº¯È¯
-  String s = String("abc"); // cf. C½ºÅ¸ÀÏ: (String)"abc"
+  // String s = "abc"; ì•”ì‹œì  í˜•ë³€í™˜
+  String s = String("abc"); // cf. CìŠ¤íƒ€ì¼: (String)"abc"
   String s1("abc");
 
-  // String s1 = s; (¾ÈµÊ)
+  // String s1 = s; (ì•ˆë¨)
   s1 = String(s);
-  String s2(s); // String Ç¥½Ã ¾È ÇØÁÖ¸é ¾ÈµÊ. ±âÁ¸¿¡ ÀÖ´ø s1(s)µµ ¾ÈµÊ
-  // func(s2); ¾ÈµÊ.
+  String s2(s); // String í‘œì‹œ ì•ˆ í•´ì£¼ë©´ ì•ˆë¨. ê¸°ì¡´ì— ìˆë˜ s1(s)ë„ ì•ˆë¨
+  // func(s2); ì•ˆë¨.
 
   String s3 { "1", "2", "3", "4"};
-  // String s3 = { "1", "2", "3", "4"}; ¾ÈµÊ
+  // String s3 = { "1", "2", "3", "4"}; ì•ˆë¨
 
   if (s)
   {
@@ -439,8 +438,8 @@ int main()
 }
 
 /*
-  08. ¿¬»êÀÚ ¿À¹ö·Îµù (È£Ãâ ¿¬»êÀÚ ¿À¹ö·Îµù, ÇÔ¼ö °´Ã¼)
-  ÇÔ¼ö func() <- Àú °ıÈ£¸¦ È£Ãâ ¿¬»êÀÚ¶ó°í ÇÔ!
+  08. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (í˜¸ì¶œ ì—°ì‚°ì ì˜¤ë²„ë¡œë”©, í•¨ìˆ˜ ê°ì²´)
+  í•¨ìˆ˜ func() <- ì € ê´„í˜¸ë¥¼ í˜¸ì¶œ ì—°ì‚°ìë¼ê³  í•¨!
 */
 # include <iostream>
 # include <algorithm>
@@ -454,19 +453,19 @@ private:
   int _max = numeric_limits<int>::min();
 
 public:
-  int operator()(int x, int y) // ±âÁ¸ ÇÔ¼ö
+  int operator()(int x, int y) // ê¸°ì¡´ í•¨ìˆ˜
   {
     return max(x, y);
   }
 
-  int operator()(int x) // Ä¿½ºÅÒ
+  int operator()(int x) // ì»¤ìŠ¤í…€
   {
     return _max = max(x, _max);
   }
 };
 
-// Struct·Îµµ °¡´É
-// Struct¿Í Class´Â ¹«¾ùÀÌ ´Ù¸¥°¡ -> ±âº» Á¢±Ù Á¦¾î°¡ °¢°¢ public, private
+// Structë¡œë„ ê°€ëŠ¥
+// Structì™€ ClassëŠ” ë¬´ì—‡ì´ ë‹¤ë¥¸ê°€ -> ê¸°ë³¸ ì ‘ê·¼ ì œì–´ê°€ ê°ê° public, private
 struct Print
 {
 public:
@@ -480,7 +479,7 @@ int main()
 {
   Max mx;
   cout << "Max: " << mx(1, 2) << endl;
-  // ÀÏ¹İ ÇÔ¼ö¿ÍÀÇ Â÷ÀÌ: Å¬·¡½ºÀÌ±â ¶§¹®¿¡ ³»ºÎ¿¡ »óÅÂ¸¦ ÀúÀåÇÒ ¼ö ÀÖÀ½!
+  // ì¼ë°˜ í•¨ìˆ˜ì™€ì˜ ì°¨ì´: í´ë˜ìŠ¤ì´ê¸° ë•Œë¬¸ì— ë‚´ë¶€ì— ìƒíƒœë¥¼ ì €ì¥í•  ìˆ˜ ìˆìŒ!
 
   Print p;
   int nums[] = { 1,2,3,4,5 };
@@ -488,9 +487,9 @@ int main()
 }
 
 /*
-  09. ¿¬»êÀÚ ¿À¹ö·Îµù (»ç¿ëÀÚ Á¤ÀÇ ¸®ÅÍ·²)
-  123.f <- Ã³·³ ºÙÀÌ´Â Á¢¹Ì»ç¸¦ ¸®ÅÍ·²ÀÌ¶ó°í ÇÔ
-  »ç¿ëÀÚ Á¤ÀÇ ¸®ÅÍ·²Àº ¾Õ¿¡ _¸¦ ºÙ¿©Áà¾ßÇÔ
+  09. ì—°ì‚°ì ì˜¤ë²„ë¡œë”© (ì‚¬ìš©ì ì •ì˜ ë¦¬í„°ëŸ´)
+  123.f <- ì²˜ëŸ¼ ë¶™ì´ëŠ” ì ‘ë¯¸ì‚¬ë¥¼ ë¦¬í„°ëŸ´ì´ë¼ê³  í•¨
+  ì‚¬ìš©ì ì •ì˜ ë¦¬í„°ëŸ´ì€ ì•ì— _ë¥¼ ë¶™ì—¬ì¤˜ì•¼í•¨
 */
 # include <iostream>
 # include <chrono>
@@ -502,16 +501,16 @@ class Length
 private:
     const long double _value;
     Length(long double value) : _value(value)
-        // »ı¼ºÀÚ·Î ¸¸µå´Â °ÍÀº Çã¿ëÇÏÁö ¾Ê°í ¸®ÅÍ·²·Î¸¸ ¾²µµ·Ï!
-        // private·Î ¸¸µé¾ú±â ¶§¹®¿¡ friendÇÔ¼ö°¡ ÇÊ¿ä
+        // ìƒì„±ìë¡œ ë§Œë“œëŠ” ê²ƒì€ í—ˆìš©í•˜ì§€ ì•Šê³  ë¦¬í„°ëŸ´ë¡œë§Œ ì“°ë„ë¡!
+        // privateë¡œ ë§Œë“¤ì—ˆê¸° ë•Œë¬¸ì— friendí•¨ìˆ˜ê°€ í•„ìš”
     {}
 
-    // friend´Â public/private »ó°ü¾øÀ½
-    // friend¶ó´Â »ç½Ç¸¸ Áß¿ä
+    // friendëŠ” public/private ìƒê´€ì—†ìŒ
+    // friendë¼ëŠ” ì‚¬ì‹¤ë§Œ ì¤‘ìš”
     friend Length operator"" _m(unsigned long long value);
     friend Length operator"" _km(unsigned long long value);
 
-    // friend Length operator"" _m(long double value); ÀÌ°Íµµ Á¤ÀÇÇØÁÖ¸é 1.0_m ÀÌ·± ½Ç¼öµµ »ç¿ë °¡´É!
+    // friend Length operator"" _m(long double value); ì´ê²ƒë„ ì •ì˜í•´ì£¼ë©´ 1.0_m ì´ëŸ° ì‹¤ìˆ˜ë„ ì‚¬ìš© ê°€ëŠ¥!
 
 public:
     long double m() const { return _value; }
@@ -530,13 +529,13 @@ public:
 };
 
 Length operator"" _m(unsigned long long value)
-// class ¾È¿¡¼­ Á¤ÀÇ±îÁö ¸¶ÃÄ¾ß ÇÏ´Âµ¥ ms VS ¿¡¼­´Â ¿À·ù°¡..
+// class ì•ˆì—ì„œ ì •ì˜ê¹Œì§€ ë§ˆì³ì•¼ í•˜ëŠ”ë° ms VS ì—ì„œëŠ” ì˜¤ë¥˜ê°€..
 {
     return Length(value);
 }
 
 Length operator"" _km(unsigned long long value)
-// class ¾È¿¡¼­ Á¤ÀÇ±îÁö ¸¶ÃÄ¾ß ÇÏ´Âµ¥ ms VS ¿¡¼­´Â ¿À·ù°¡..
+// class ì•ˆì—ì„œ ì •ì˜ê¹Œì§€ ë§ˆì³ì•¼ í•˜ëŠ”ë° ms VS ì—ì„œëŠ” ì˜¤ë¥˜ê°€..
 {
     return Length(value * 1000);
 }
@@ -544,7 +543,7 @@ Length operator"" _km(unsigned long long value)
 int main()
 {
     chrono::minutes m = 24h + 5min;
-    // h³ª minÀÇ Á¤ÀÇ·Î ÀÌµ¿ÇØº¸ÀÚ!
+    // hë‚˜ minì˜ ì •ì˜ë¡œ ì´ë™í•´ë³´ì!
 
     Length len = -1_m + 1_km;
     cout << len.m() << endl;
