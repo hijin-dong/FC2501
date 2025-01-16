@@ -71,31 +71,221 @@ int main()
 # include <iostream>
 using namespace std;
 
-template<typename T>
+template<typename T> // , int N>
 class Queue
 {
 private:
 	size_t _size; // 원소가 몇 개인지
-	site_t _capacity; // items의 사이즈
+	size_t _capacity; // items의 총 사이즈
 	T* _items;
-public:
-	Queue() : _size(0), _capacity(4), _items(new T[_capacity])
-	{
+	// T _items[N];
+	// capacity를 받아서 설정하는 것도 가능. 동적할당 관련 코드 모두 삭제
 
-	}
+public:
+	Queue();
+	Queue() : _size(0), _capacity(4), _items(new T[_capacity])
+	{}
 
 	~Queue()
 	{
 		delete[] _items;
 	}
 
-	void push(T item)
-	{
-
-	}
+	void push(T item);
+	void pop();
+	T& top();
 };
+
+template<typename T>
+void Queue<T>::push(T item)
+{
+	if (_size < _capacity)
+	{
+		_items[_size++] = item;
+	}
+	else
+	{
+		size_t newCapacity = _capacity * 2;
+		T* oldItems = _items;
+		T* newItems = new T[newCapacity];
+
+		copy(oldItems, oldItems + _capacity, newItems);
+		_capacity = newCapacity;
+		_items = newItems;
+
+		delete[] oldItems;
+
+		push(item);
+	}
+		// if (size < N) _items[_size++] = item;
+		// else throw out_of_range("Overflow!");
+}
+
+template<typename T>
+void Queue<T>::pop()
+{
+	if (_size == 0)
+		throw out_of_range("underflow!");
+	--_size;
+}
+
+template<typename T>
+T& Queue<T>::top()
+{
+	if (_size == 0)
+		throw out_of_range("underflow!");
+	return _items[_size - 1];
+}
 
 int main()
 {
+	Queue<string> q;
+	try
+	{
+		q.push("huhu");
+		q.push("HUHU");
+		cout << q.top() << endl;
+		q.pop();
+		cout << q.top() << endl;
+	}
+	catch(exception e)
+	{
+		cout << e.what() << endl;
+	}
+}
 
+/*
+	03. 템플릿 특수화
+*/
+# include <iostream>
+using namespace std;
+
+class Test {};
+
+template <typename T>
+void Swap(T& x, T& y)
+{
+	T temp = x;
+	x = y;
+	y = temp;
+}
+
+template<>
+void Swap(Test& x, Test& y) // 위의 함수와 동일한 레퍼런스 형태
+{
+	cout << "swap<Test>" << endl;
+}
+
+template <typename T>
+void Swap(T* x, T* y) // 포인터를 위한 추가 함수. 오버로딩된 다른 함수
+{
+	cout << "swap pointer" << endl;
+	T temp = *x;
+	*x = *y;
+	*y = temp;
+}
+
+//
+template<typename T, typename S>
+class Test1
+{
+public:
+	T num0;
+	S num1;
+};
+
+template<>
+class Test1<int, float>
+{};
+
+template<typename T>
+class Test1<T, T>
+{
+public:
+	T nums;
+};
+
+template<typename T>
+class Test1<T, int>
+{
+public:
+	T a;
+};
+//
+
+int main()
+{
+	// 01. 특정 type의 경우 다르게 처리하기
+	Test t0, t1;
+	Swap(t0, t1);
+
+	// 02. 포인터의 경우에는..
+	int x = 10, y = 20;
+	int* px = &x, * py = &y;
+	Swap(px, py);
+	cout << x << " " << y << endl; // 기존 함수를 사용하면 포인터값만 바뀌고 실제 값은 변동없음
+	cout << *(&x) << " " << *(&y) << endl;
+	cout << *px << " " << *py << endl;
+
+	// 03. 클래스 특수화
+	Test1<int, int> t0;
+	Test1<int, float> t1;
+	Test1<float, int> t2; // 맨 아래 클래스 따라감 (구체적인 것이 우선순위 높음)
+}
+
+/*
+	04. 템플릿 구체화
+	- 함수 템플릿, 클래스 템플릿은 함수, 클래스 자체가 아님
+	- 구체화가 필요함!
+	- swap.h 참고! (swap.cpp 없음)
+*/
+# include <iostream>
+# include "swap.h"
+
+int main()
+{
+	int x = 10, y = 20;
+	swap<int>(x, y); // <int>를 표기함으로써 구체화
+}
+
+/*
+	05. 가변 인자
+	printf("%d %d, 10, 10);
+	위와 같은 함수를 실행할 때 %d 개수를 다양하게 받을 수 있어!
+*/
+# include <iostream>
+# include <cstdarg>
+
+int sum(int count...)
+{
+	int result = 0;
+	va_list args;
+	va_start(args, count);
+
+	for (int i = 0; i < count; i++)
+		result += va_arg(args, int);
+
+	va_end(args);
+	return result;
+}
+
+// 아래 템플릿 함수에서 재귀 반복하다가 마지막에 호출할 탈출 함수
+int sumT(int value)
+{
+	return value;
+}
+
+template<typename... Args>
+int sumT(int value, Args... args)
+{
+	return value + sumT(args...);
+}
+
+int main()
+{
+	// 1. c 스타일 가변 인자
+	std::cout << sum(4, 10, 20, 30, 40) << std::endl;
+
+	// 2. 템플릿을 이용한 가변 인자
+	std::cout << sumT(10, 20, 30, 40) << std::endl;
 }
