@@ -289,3 +289,73 @@ int main()
 	// 2. 템플릿을 이용한 가변 인자
 	std::cout << sumT(10, 20, 30, 40) << std::endl;
 }
+
+/*
+	05. 가변 인자
+	printf("%d %d, 10, 10);
+	위와 같은 함수를 실행할 때 %d 개수를 다양하게 받을 수 있어!
+*/
+# include <iostream>
+# include <cstdarg>
+
+int sum(int count...)
+{
+	int result = 0;
+	va_list args;
+	va_start(args, count);
+
+	for (int i = 0; i < count; i++)
+		result += va_arg(args, int);
+
+	va_end(args);
+	return result;
+}
+
+// 아래 템플릿 함수에서 재귀 반복하다가 마지막에 호출할 탈출 함수
+template<typename T>
+T sumT(T value)
+{
+	return value;
+}
+
+template<typename T, typename... Args>
+T sumT(T value, Args... args)
+{
+	return value + sumT(args...);
+}
+
+int main()
+{
+	// 1. c 스타일 가변 인자
+	std::cout << sum(4, 10, 20, 30, 40) << std::endl;
+
+	// 2. 템플릿을 이용한 가변 인자
+	std::cout << sumT(10, 20.3f, 30, 40) << std::endl;
+	std::cout << sumT<float>(10, 20.3f, 30, 40) << std::endl;
+}
+
+/*
+	06. 템플릿 메타 프로그래밍
+*/
+# include <iostream>
+
+template<int N>
+struct Factorial
+{
+	static const int value = N * Factorial<N - 1>::value;
+};
+
+// 탈출 조건은 특수화를 통해 만들어줌
+template<>
+struct Factorial<1>
+{
+	static const int value = 1;
+};
+
+int main()
+{
+	std::cout << "여기에 종단점 걸고 확인" << std::endl;
+	// 컴파일 타임에 계산 끝내고 값 자체가 이미 적용됨 (디버깅 불가)
+	std::cout << Factorial<5>::value << std::endl;
+	// 컴파일 시에 계산하므로 변수는 못 넣음 (const는 가능)
+}
