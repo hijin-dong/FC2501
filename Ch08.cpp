@@ -504,9 +504,46 @@ int main()
         cout << "v_iter: " << *v_iter << endl;
 
     // 5) remove
-    v = { 1, 2, 3, 2 };
-    remove(v.begin(), v.end(), 2);
+    v = { 1, 2, 3, 4, 3, 2, 1 };
+    auto r_iter = remove(v.begin(), v.end(), 2);
 
     for (auto num : v)
-        cout << "after remove: " << num << endl; // 1, 3, 3, 2
+        cout << "after remove: " << num << endl; // 1, 3, 4, 3, 1, 2, 1
+    // remove는 실제로 삭제를 하지 않고 당긴 후에 원래 크기대로 맞춤 -> 크기가 고정되어 있는 array 등에도 사용 가능 (범용성)
+    // 1, 2, 3, 4, 3, 2, 1
+    // 1, 3, 4, 3, 1, #, # (#은 위의 것 그대로 가지고 내려옴)
+    // r_iter는 첫 번째 #의 위치를 반환해줌 (직전까지는 의도한 것이라는 표시)
+    v.erase(r_iter, v.end());
+    // 1, 3, 4, 3, 1
+
+    for (auto num : v)
+        cout << "after erase: " << num << endl;
+
+    // list는 직관적으로 동작
+    list<int> l{ 1, 2, 3, 4, 3, 2, 1 };
+    l.remove(2);
+    for (auto num : l)
+        cout << "list remove: " << num << endl;
+    // 조건 추가해서 삭제
+    l.remove_if([](const int& value)
+        {
+            return value % 2 == 0;
+        });
+    for (auto num : l)
+        cout << "list remove(2): " << num << endl; // 1, 3, 3, 1
+
+    auto l_iter = remove(l.begin(), l.end(), 1);
+    for (auto num : l)
+        cout << "list remove(3): " << num << endl;
+
+    // set은 순서가 있기 때문에 당겨서 삭제하는 방식의 remove, remove_if 사용 불가
+    // for문 순회 + erase 이용해서 삭제
+    set<int> s{ 1, 2, 3, 4 };
+    for (auto iter = s.begin(); iter != s.end(); )
+    {
+        if (*iter == 2)
+            iter = s.erase(iter);
+        else
+            iter++;
+    }
 }
