@@ -158,8 +158,40 @@ struct Func
   int value;
   void operator()() // mutable이 없으면 여기에 const 키워드 추가됨
   {
-    value = 20;
+    value++;
     cout << "1.3: " << value << endl;
+  }
+};
+
+// ~1.5
+auto func5()
+{
+  int num = 10;
+  return [&]
+    {
+      return num;
+    };
+}
+
+auto func6()
+{
+  int num = 10;
+  return [=]
+    {
+      return num;
+    };
+}
+
+// ~1.6
+struct Test
+{
+  int num = 10;
+  auto testFunc()
+  {
+    return [num = num] // 이니셜라이저 캡처
+      {
+        return num;
+      };
   }
 };
 
@@ -168,9 +200,9 @@ int main()
   // 1) 중괄호는 캡처
   int value = 10;
   auto func = [value]()
-  {
-    return value;
-  };
+    {
+      return value;
+    };
 
   // 1.1) 캡처와 파라미터는 뭐가 다른가?
   // 호출하려는 파라미터의 함수 파라미터가 이미 정해져있는데, 별도로 넘겨주고 싶은 값이 있을 경우 캡처 활용
@@ -179,22 +211,64 @@ int main()
   // 1.2) 레퍼런스로 캡처하지 않고 값 변경 가능
   // 레퍼런스가 아니므로 함수 내부에서만 임시로 변경되고 원본에는 영향 없음
   auto func1 = [value]() mutable
-  {
-    value = 20;
-    cout << "1.2: " << value << endl;
-  };
+    {
+      value = 20;
+      cout << "1.2: " << value << endl;
+    };
   func1();
 
   // 1.3) 1.2가 어떻게 가능할까? (람다함수 = 함수객체)
   Func func2;
   func2.value = 10; // capture
-  func2();
+  func2(); // 11
+  func2(); // 12
+  // 같은 원리로 mutable 여러 번 호출 시, 원본에 영향을 안 주더라도 11이 아닌 12가 나올 수 있음
+
+  // 1.4) 몽땅 캡처 & 레퍼런스로 몽땅 캡처 + Mix
+  int num1 = 10;
+  int num2 = 20;
+  auto func3 = [=, &value]() // value는 레퍼런스로 캡처, 나머지는 값으로 캡처
+    {
+      cout << "1.4: " << num1 + num2 << endl;
+    };
+  func3();
+  auto func4 = [&, value]() // value는 값으로 캡처, 나머지는 레퍼런스로 캡처
+    {
+      cout << "1.4: " << num1 + num2 << endl;
+    };
+  func4();
+
+  // 1.5) 값 캡처와 레퍼런스 캡처의 차이
+  auto f1 = func5();
+  auto f2 = func6();
+  cout << "1.5: " << f1() << endl; // 쓰레기값. 지역변수가 사라짐
+  cout << "1.5: " << f2() << endl; // 10
+
+  // 1.6) struct 캡처
+  Test* t = new Test;
+  auto func5 = t->testFunc();
+  delete t;
+  cout << "1.6: " << func5() << endl;
+
 
   // 2) 람다함수 즉시 실행도 가능
   [value]()
-  {
-    cout << "2: " << value << endl;
-  }(); // 맨 뒤 소괄호는 람다 함수를 즉시 실행
+    {
+      cout << "2: " << value << endl;
+    }(); // 맨 뒤 소괄호는 람다 함수를 즉시 실행
 
-  // 3)
+  // 3) generic lambda
+    auto func6 = [](auto value)
+      {
+        return value;
+      };
+    cout << "3: " << func6(10) << endl;
+    cout << "3: " << func6("10") << endl;
+
+    auto func7 = []<typename T>(T value) // C++20
+    {
+      return value;
+    };
+    cout << "3: " << func7(10) << endl;
+    cout << "3: " << func7("10") << endl;
 }
