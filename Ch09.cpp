@@ -131,3 +131,70 @@ int main()
 
   decltype(Person::weight) weight; // 실제로 실행되지 않기 때문에 인스턴스화 필요없음
 }
+
+/*
+  03. lambda
+  - 기본형 (no params)
+  auto func = [](params) -> int // 반환형은 선택사항
+  {};
+
+  - 기본형 (params)
+  auto func = [] -> int // 반환형은 선택사항
+  {};
+*/
+#include <iostream>
+#include <functional>
+using namespace std;
+
+// ~1.1
+void foo(function<int(void)> func) // func는 void를 받고 int를 리턴
+{
+  cout << "1.1: " << func() << endl;
+}
+
+// ~1.3
+struct Func
+{
+  int value;
+  void operator()() // mutable이 없으면 여기에 const 키워드 추가됨
+  {
+    value = 20;
+    cout << "1.3: " << value << endl;
+  }
+};
+
+int main()
+{
+  // 1) 중괄호는 캡처
+  int value = 10;
+  auto func = [value]()
+  {
+    return value;
+  };
+
+  // 1.1) 캡처와 파라미터는 뭐가 다른가?
+  // 호출하려는 파라미터의 함수 파라미터가 이미 정해져있는데, 별도로 넘겨주고 싶은 값이 있을 경우 캡처 활용
+  foo(func);
+
+  // 1.2) 레퍼런스로 캡처하지 않고 값 변경 가능
+  // 레퍼런스가 아니므로 함수 내부에서만 임시로 변경되고 원본에는 영향 없음
+  auto func1 = [value]() mutable
+  {
+    value = 20;
+    cout << "1.2: " << value << endl;
+  };
+  func1();
+
+  // 1.3) 1.2가 어떻게 가능할까? (람다함수 = 함수객체)
+  Func func2;
+  func2.value = 10; // capture
+  func2();
+
+  // 2) 람다함수 즉시 실행도 가능
+  [value]()
+  {
+    cout << "2: " << value << endl;
+  }(); // 맨 뒤 소괄호는 람다 함수를 즉시 실행
+
+  // 3)
+}
