@@ -86,39 +86,48 @@ using namespace std;
 // ~3
 int func(float)
 {
-    return 10;
+  return 10;
 }
 
 int f(float)
 {
-    return 20;
+  // decltype는 실제로 함수를 실행하는 것은 아니기에 출력되지 않음
+  cout << "function!" << endl;
+  return 20;
 }
+
+struct Person
+{
+  float weight, height;
+};
 
 int main()
 {
-    // 1) 변수
-    decltype(1) num = 10;
-    decltype(1.1f) num1 = 10;
-    decltype(num) num2 = 20;
-    decltype(num)& num3 = num;
-    const decltype(num) num4 = 10;
-    decltype(1 + 22.2f) num5 = 1;
-    decltype((num)) num6 = num; // int&
-    decltype(func(1.f)) num7 = 20;
+  // 1) 변수
+  decltype(1) num = 10;
+  decltype(1.1f) num1 = 10;
+  decltype(num) num2 = 20;
+  decltype(num)& num3 = num;
+  const decltype(num) num4 = 10;
+  decltype(1 + 22.2f) num5 = 1;
+  decltype((num)) num6 = num; // int&
+  decltype(func(1.f)) num7 = 20;
 
-    // 2) 배열
-    int nums[] = { 1, 2, 3 };
-    decltype(nums) nums1 = { 1, 2, 4 }; // 같은 크기로만 가능
-    auto nums2 = nums; // auto는 포인터로 가능했지만,
-    // decltype(nums) nums1 = nums; // 불가
+  // 2) 배열
+  int nums[] = { 1, 2, 3 };
+  decltype(nums) nums1 = { 1, 2, 4 }; // 같은 크기로만 가능
+  auto nums2 = nums; // auto는 포인터로 가능했지만,
+  // decltype(nums) nums1 = nums; // 불가
 
-    // 3) 함수
-    decltype(func) f; // 함수 시그니처 동일해야 함
-    cout << f(10.f) << endl; // 20
+  // 3) 함수
+  decltype(func) f; // 함수 시그니처 동일해야 함
+  cout << f(10.f) << endl; // 20
 
-    decltype(func)& f0 = func;
-    cout << f0(10.f) << endl; // 10
+  decltype(func)& f0 = func;
+  cout << f0(10.f) << endl; // 10
 
-    decltype(func)* f1 = func;
-    cout << f1(10.f) << endl; // 10
+  decltype(func)* f1 = func;
+  cout << f1(10.f) << endl; // 10
+
+  decltype(Person::weight) weight; // 실제로 실행되지 않기 때문에 인스턴스화 필요없음
 }
