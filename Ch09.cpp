@@ -272,3 +272,26 @@ int main()
     cout << "3: " << func7(10) << endl;
     cout << "3: " << func7("10") << endl;
 }
+
+/*
+	04. constexpr
+	- 컴파일 시간에 미리 값을 계산 & 결정
+	- C에서 # define NUMBER 5 작성 시 컴파일러가 NUMBER를 5로 치환
+	- 매크로보다 더 많은 것을 컴파일 시간에 결정할 수 있도록 해주는 기능
+	* 참고: https://nx006.tistory.com/22
+*/
+
+# include <iostream>
+using namespace std;
+
+constexpr int fib(int num)
+{
+	return num <= 1 ? num : fib(num - 2) + fib(num - 1);
+}
+
+int main()
+{
+  int value = fib(10);
+	cout << value << endl;
+	int nums[value];
+}
