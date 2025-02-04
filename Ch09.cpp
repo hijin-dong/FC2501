@@ -635,3 +635,38 @@ struct Test
 		cout << "Destruct: " << num << endl;
 	}
 };
+
+// ~3
+void foo(unique_ptr<Test> p)
+{
+	p.reset(new Test(100));
+}
+
+int main()
+{
+	// 1) 문제 제기
+	int* num0 = new int(10);
+	int* num1 = num0;
+	// delete num0;
+	// delete num1; // 같은 포인터를 두 번 삭제하는 것 같은데..
+	// 이런 상황을 쉽게 해결해보자!
+
+	Test* test = new Test(0);
+	unique_ptr<Test> p0(test); // 파괴까지 알아서!
+	unique_ptr<Test> p1(new Test(1)); // 이 방식이 더 안전! (직접 전달하니까 다른 곳에 쓰일 우려 X)
+	auto p2 = make_unique<Test>(2); // 동일하게 동작! (c++14)
+
+	// 2) 일반 포인터와의 공통점과 차이점
+		// 공통점
+	test->num;
+	p0->num; // -> 를 이용해서 프로퍼티 접근
+	
+		// 차이점
+	// unique_ptr<Test> p1 = p0; // 1번에서와 같은 문제 상황 발생 X. 할당 불가
+	unique_ptr<Test> p3 = move(p0); // move하면 가능. p0은 유효하지 않은 상태가 됨
+
+	// 함수에 unique_ptr을 파라미터로 넘기려면..
+	// foo(p3);
+	foo(move(p3)); // unique_ptr은 unique 해야 함
+	cout << p3->num << endl;
+}
