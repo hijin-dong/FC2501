@@ -284,14 +284,354 @@ int main()
 # include <iostream>
 using namespace std;
 
+// ~1
 constexpr int fib(int num)
 {
 	return num <= 1 ? num : fib(num - 2) + fib(num - 1);
 }
 
+template<int N>
+void print()
+{
+	cout << N << endl;
+}
+
+struct Item
+{
+	int power;
+	// string name; // 리터럴 타입이 아닌 속성 추가 시 에러 발생
+	constexpr Item(int power) : power(power)
+	{}
+
+	constexpr Item operator+(const Item& other) const
+	{
+		return Item(power + other.power);
+	}
+};
+
+// ~2
+# include <type_traits>
+template<typename T>
+auto getValue(T t)
+{
+	if constexpr (is_pointer<T>()) // constexpr 키워드 없으면 실행 안 됨 (int 역참조 불가)
+		return *t;
+	else
+		return t;
+}
+
 int main()
 {
-  int value = fib(10);
-	cout << value << endl;
-	int nums[value];
+	// 1) 상수로 취급
+	constexpr int value = fib(10);
+	int nums[value]; // 배열 선언 사용 가능
+	print<value>(); // template 인자로 사용 가능
+	constexpr Item item{ 10 }; // 내부 property가 모두 리터럴이면 struct도 가능
+
+	// 2) constexpr if
+	// 상수 시간에 계산되는 조건문
+	int num = 10;
+	int* pNum = &num;
+	cout << getValue(num) << endl;
+	cout << getValue(pNum) << endl;
+
+	// 3) lambda에 constexpr 암시적으로 달려있음 (c++ 17~)
+	auto func = [](int y) noexcept // noexcept 키워드를 붙여서 추가 최적화 가능
+		{
+			return y;
+		};
+	int nums1[func(10)]; // 람다 함수 리턴 값으로 배열 선언 사용 가능
 }
+
+/*
+	05. 우측값 참조/이동 의미론
+*/
+# include <iostream>
+# include <cstring>
+# include <vector>
+using namespace std;
+
+// ~3: Destructor 오류 방지용
+const char* Wrap(const char* str)
+{
+	return str ? str : "";
+}
+
+class String
+{
+private:
+	char* _str;
+
+public:
+	// 암시적 변환을 막기 위해 explicit 추가
+	explicit String(const char* str)
+		: _str(new char[strlen(str) + 1])
+	{
+		strcpy(_str, str);
+		cout << "Construct: " << _str << endl;
+	}
+
+	// 복사 연산자
+	String(const String& other)
+		: _str(new char[strlen(other._str) + 1])
+	{
+		strcpy(_str, other._str);
+		cout << "Copy Construct: " << _str << endl;
+	}
+
+		// ~3.
+		// copy가 아니라 move를 해보자!
+		// 임시값(더 이상 사용되지 않을 값)이라고 판단되면 오버로딩된 함수로 들어옴
+	String(String&& other) noexcept
+		: _str(move(other._str))
+	{
+		cout << "Move Construct: " << _str << endl;
+		other._str = nullptr;
+	}
+
+	~String()
+	{
+		cout << "Destruct: " << Wrap(_str) << endl;
+		delete[] _str;
+	}
+
+	// 복사 대입 연산자
+	String& operator=(const String& other)
+	{
+		cout << "Copy Operator: " << _str << " = " << other._str << endl;
+		delete[] _str;
+
+		_str = new char[strlen(other._str) + 1];
+		strcpy(_str, other._str);
+		return *this;
+	}
+
+		// ~3.
+		// copy가 아니라 move를 해보자!
+	String& operator=(String&& other) noexcept // noexcept 안 쓰면 이동이 아니라 복사가 될 수 있음
+	{
+		cout << "Move Operator: " << Wrap(_str) << " = " << other._str << endl;
+		delete[] _str;
+		// 깊은 복사나 new 필요 X
+		_str = move(other._str);
+		other._str = nullptr;
+		return *this;
+	}
+
+	friend ostream& operator<<(ostream& os, String& str)
+	{
+		return (os << str._str);
+	}
+};
+
+template<typename T>
+void Swap(T& x, T& y)
+{
+	// T temp = x;
+	T temp = move(x); // 이동 생성자를 호출 -> x는 비어있는 상태가 됨
+
+	// x = y;
+	x = move(y); // y는 비어있는 상태, x는 값을 가진 상태
+	
+	// y = temp;
+	y = move(temp);
+}
+
+// ~5
+String makeString(const char* str)
+{
+	return String(str);
+}
+
+int main()
+{ 
+	// 1) 예시 1
+	cout << "===== Example 1 =====" << endl;
+	String s0("abc");
+	s0 = String("def");
+	// 실행결과
+		//Construct: abc
+		//Construct : def
+		//Copy Operator : abc = def
+		//Destruct : def // 임시객체 삭제
+		//Destruct : def // 프로그램 종료 전 s0 삭제
+
+	// 2) 예시 2
+	cout << "===== Example 2 =====" << endl;
+	String s1("abc");
+	String s2("def");
+	Swap(s1, s2);
+	cout << "After Swapping, S1: " << s1 << endl;
+	cout << "After Swapping, S2: " << s2 << endl;
+	// 실행결과: 불필요한 인스턴스 생성 다수 발생!
+		//Construct: abc
+		//Construct : def
+		//Copy Construct : abc
+		//Copy Operator : abc = def
+		//Copy Operator : def = abc
+		//Destruct : abc
+		//Destruct : abc
+		//Destruct : def
+		//Destruct : def
+
+	// 3) 위의 두 예시 개선: copy말고 이동을 해보자!
+	// 이동: 얕은 복사 후 기존 변수에 널 포인터 세팅
+		// 예시 1
+		//Construct: abc
+		//Construct : def
+		//Move Operator : abc = def
+		//Destruct :
+
+		// 예시2
+		//Construct: abc
+		//Construct : def
+		//Move Construct : abc
+		//Move Operator : = def
+		//Move Operator : = abc
+		//Destruct :
+		//Destruct : abc
+		//Destruct : def
+		//Destruct : def
+
+	// 4) noexcept일 때만 이동, 아니면 복사
+	// move_if_noexcept()
+
+	// 5) Factory 함수
+	cout << "===== Example 5 =====" << endl;
+	makeString("abc");
+	// 함수 내에서 move를 하지 않아도 Construct와 Destruct가 한 번씩 일어남
+	// main 함수에서 진행한 것과 같은 효과 (return 하는 것에 대해서는 알아서 최적화)
+
+	// 6) lvalue와 rvalue
+	// - lvalue: 표현식에 id가 있고(메모리에 존재, 이름&영속성이 있음), 이동 불가. &a(레퍼런스)
+	// - rvalue: 임시값, &&a
+	int num0 = 10;
+	int& num1 = num0;
+	int&& num2 = 10; // 값이 같아도 논리상 num1은 넣어줄 수 없음!
+	const int& num3 = 10; // const를 붙이면 lvalue에 rvalue 할당 가능
+}
+
+/*
+	06. 전달(보편) 참조 / 완벽 전달
+*/
+# include <iostream>
+# include <type_traits>
+using namespace std;
+
+// ~1
+void goo(int&& value)
+{
+	cout << "goo(int&&)" << endl;
+}
+
+void goo(int& value)
+{
+	cout << "goo(int&)" << endl;
+}
+
+void foo(int&& value)
+{
+	// scope를 벗어나기 전까지 value는 유효함 -> params는 항상 lvalue
+	// goo(value);
+	goo(move(value));
+}
+
+void foo(int& value)
+{
+	goo(value);
+}
+
+// ~2.
+template<typename T>
+void foo2(T&& t)
+{
+	cout << "lvalue ref T: " << is_lvalue_reference_v<T> << endl;
+	cout << "rvalue ref T: " << is_rvalue_reference_v<T> << endl;
+
+	cout << "lvalue ref T&: " << is_lvalue_reference_v<T&> << endl;
+	cout << "rvalue ref T&: " << is_rvalue_reference_v<T&> << endl;
+
+	cout << "lvalue ref T&&: " << is_lvalue_reference_v<T&&> << endl;
+	cout << "rvalue ref T&&: " << is_rvalue_reference_v<T&&> << endl;
+}
+
+// ~3.
+template<typename T>
+void foo3(T&& value)
+{
+	goo(forward<T>(value));
+}
+
+int main()
+{
+	// 1) rvalue, lvalue를 다르게 함수로 처리하기
+	// 파라미터가 1개 늘어날 때마다 만들어야 하는 함수 개수가 2배가 됨 & 가변인자는?!
+	cout << "===== Example 1 =====" << endl;
+	foo(10); // goo(int&). rvalue를 넘겨줬는데 lvalue로 처리되고 있음 -> foo 내부 goo 호출 시 move 사용!
+	int num = 10;
+	foo(num); // goo(int&)
+
+	// 2) 1번에서 나타난 문제 해결하기!
+	move(10);
+	move(num);
+	// move 함수는 정의 1가지로 rvalue, lvalue 둘 다 처리!
+	// -> 템플릿 파라미터에 &&를 붙이면 두 종류 다 받을 수 있음! (유니버셜 레퍼런스)
+	// auto&&도 동일한 효과
+	cout << "===== Example 2 =====" << endl;
+	cout << boolalpha;
+	int num0(10);
+	foo2(num0); // lvalue
+	cout << endl;
+
+	int& num1 = num0;
+	foo2(num0); // lvalue
+	cout << endl;
+
+	foo2(10); // rvalue
+	cout << endl;
+
+		// 1 & 2
+		//lvalue ref T : true
+		//rvalue ref T : false
+		//lvalue ref T& : true
+		//rvalue ref T& : false
+		//lvalue ref T&& : true
+		//rvalue ref T&& : false
+
+		// 3
+		//lvalue ref T : false
+		//rvalue ref T : false
+		//lvalue ref T& : true
+		//rvalue ref T& : false
+		//lvalue ref T&& : false
+		//rvalue ref T&& : true
+
+	// 3. 전달 참조 (보편 참조) 완벽 전달
+	foo3(10);
+}
+
+/*
+	07. 스마트 포인터
+	- auto_ptr: 폐기 예정
+	- unique_ptr
+	- shared_ptr
+	- weak_ptr
+*/
+# include <iostream>
+# include <memory>
+using namespace std;
+
+struct Test
+{
+	int num;
+
+	Test(int num) : num(num)
+	{
+		cout << "Construct: " << num << endl;
+	}
+
+	~Test()
+	{
+		cout << "Destruct: " << num << endl;
+	}
+};
