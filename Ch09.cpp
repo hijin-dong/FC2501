@@ -636,11 +636,36 @@ struct Test
 	}
 };
 
-// ~3
+// ~2
 void foo(unique_ptr<Test> p)
 {
 	p.reset(new Test(100));
 }
+
+struct Deleter
+{
+	void operator()(Test* test) const
+	{
+		cout << "delete: " << test->num << endl;
+		delete test;
+	}
+};
+
+// ~4.
+struct B;
+struct A
+{
+	A() { cout << "Construct A" << endl; }
+	~A() { cout << "Destruct A" << endl; }
+	shared_ptr<B> b;
+};
+struct B
+{
+	B() { cout << "Construct B" << endl; }
+	~B() { cout << "Destruct B" << endl; }
+	// shared_ptr<A> a;
+	weak_ptr<A> a;
+};
 
 int main()
 {
@@ -651,22 +676,142 @@ int main()
 	// delete num1; // 같은 포인터를 두 번 삭제하는 것 같은데..
 	// 이런 상황을 쉽게 해결해보자!
 
+	// 2) unique_ptr
+	cout << "========== Example 2 ==========" << endl;
 	Test* test = new Test(0);
-	unique_ptr<Test> p0(test); // 파괴까지 알아서!
-	unique_ptr<Test> p1(new Test(1)); // 이 방식이 더 안전! (직접 전달하니까 다른 곳에 쓰일 우려 X)
-	auto p2 = make_unique<Test>(2); // 동일하게 동작! (c++14)
+	unique_ptr<Test> up0(test); // 파괴까지 알아서!
+	unique_ptr<Test> up1(new Test(1)); // 이 방식이 더 안전! (직접 전달하니까 다른 곳에 쓰일 우려 X)
+	auto up2 = make_unique<Test>(2); // 동일하게 동작! (c++14)
 
-	// 2) 일반 포인터와의 공통점과 차이점
-		// 공통점
+		// 2.1) 일반 포인터와의 공통점과 차이점
+			// 공통점
 	test->num;
-	p0->num; // -> 를 이용해서 프로퍼티 접근
-	
-		// 차이점
-	// unique_ptr<Test> p1 = p0; // 1번에서와 같은 문제 상황 발생 X. 할당 불가
-	unique_ptr<Test> p3 = move(p0); // move하면 가능. p0은 유효하지 않은 상태가 됨
+	up0->num; // -> 를 이용해서 프로퍼티 접근
 
-	// 함수에 unique_ptr을 파라미터로 넘기려면..
+			// 차이점
+	// unique_ptr<Test> p1 = p0; // 1번에서와 같은 문제 상황 발생 X. 할당 불가
+	unique_ptr<Test> up3 = move(up0); // move하면 가능. p0은 유효하지 않은 상태가 됨
+
+		// 2.2) 함수에 unique_ptr을 파라미터로 넘기려면..
 	// foo(p3);
-	foo(move(p3)); // unique_ptr은 unique 해야 함
-	cout << p3->num << endl;
+	foo(move(up3)); // unique_ptr은 unique 해야 함
+
+		// 2.3) unique_ptr 회수도 가능
+	Test* uniquePtr = up3.release();
+	delete uniquePtr;
+	// 이 때 delete도 커스텀 가능
+	unique_ptr<Test, Deleter> p3(new Test(0));
+
+	// 3) shared_ptr: 공동 소유
+	cout << "========== Example 3 ==========" << endl;
+	shared_ptr<Test> sp0(new Test(0));
+	shared_ptr<Test> sp1 = sp0;
+	shared_ptr<Test> sp2 = make_shared<Test>(0); // atomic 연산 가능 but 커스텀 deleter 사용 불가
+	shared_ptr<Test> sp3 = sp2;
+
+	cout << sp0.use_count() << endl;
+	sp0.reset();
+	cout << sp0.use_count() << endl;
+
+	// 4) weak_ptr
+	cout << "========== Example 4 ==========" << endl;
+		// 4.1) 참조 포인터 레퍼런스 카운트를 증가시키지 않음
+	auto a = make_shared<A>();
+	auto b = make_shared<B>();
+	a->b = b;
+	b->a = a;
+	// 현재 상황은 a와 b가 서로 물려있는 상황(순환참조)이기에 delete를 해주기가 난감 -> 메모리 누수
+	// 둘 중 한 struct는 weak_ptr로 정의
+	cout << a.use_count() << endl; // 1
+	cout << b.use_count() << endl; // 2
+
+		// 4.2) 프로퍼티에 접근하기
+	auto wp0 = make_shared<Test>(0);
+	weak_ptr<Test> wp1 = wp0;
+	cout << wp0.use_count() << endl; // 1
+
+	auto shared = wp1.lock();
+	cout << "shared num: " << shared->num << endl;
+	cout << wp0.use_count() << endl; // 2
+
+		// 4.3) 기존 shared_ptr이 사라지면 weak_ptr은 lock이 되었더라도 무효가 됨
+}
+
+/*
+	08. std::function
+	- 호출 가능한 객체를 wrapping할 수 있음
+*/
+# include <iostream>
+# include <functional>
+using namespace std;
+
+// ~1.
+template<typename T>
+void foo() { cout << typeid(T).name() << endl; }
+int func(float) { return 1; }
+
+struct Func0
+{
+	int operator()(float value) { return value; }
+};
+
+struct Func1
+{
+	static int func0(float value) { return value; }
+	int func1(float value) const { return value; }
+};
+
+// ~2.
+void func1(int n1, int n2, int n3)
+{
+	cout << "n1: " << n1 << endl;
+	cout << "n2: " << n2 << endl;
+	cout << "n3: " << n3 << endl;
+}
+
+int main()
+{
+	// 1) callable: 호출 가능한 객체: 함수, 함수 객체, 람다 ...
+		// 1.1) 함수
+	cout << "========== Example 1 ==========" << endl;
+	foo<int(float)>(); // int __cdecl(float)
+
+	function<int(float)> f0 = func;
+	cout << f0(1.1f) << endl; // 1
+
+		// 1.2) 람다
+	function<int(float)> f1 = [](float value) { return value; };
+	cout << f1(1.1f) << endl; // 1
+
+		// 1.3) 함수 객체
+	function<int(float)> f2 = Func0();
+	cout << f2(1.1f) << endl; // 1
+
+	function<int(float)> f3 = Func1::func0; // static 함수
+	cout << f3(1.1f) << endl;
+
+	int(Func1:: * f)(float) const = &Func1::func1; // non-static 함수
+	cout << (Func1().*f)(2) << endl;
+
+	// 2) Bind
+	cout << "========== Example 2 ==========" << endl;
+	bind(func1, placeholders::_3, placeholders::_1, placeholders::_2)
+		(1, 2, 3); // 3, 1, 2
+}
+
+/*
+	09. std::thread
+*/
+# include <iostream>
+# include <thread>
+using namespace std;
+
+int main()
+{
+	thread th0; // 운영체제의 할당을 받지 않은 빈 스레드 객체
+	thread th1([]
+		{
+			cout << "thread" << endl;
+		}); // callable 한 객체를 넣어 할당 요청
+	th1.join(); // thread가 끝날때까지 대기
 }
