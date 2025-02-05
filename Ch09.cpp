@@ -804,14 +804,19 @@ int main()
 */
 # include <iostream>
 # include <thread>
+# include <chrono>
 using namespace std;
 
 int main()
 {
+	cout << "thread ID: " << this_thread::get_id() << endl;
+
 	thread th0; // 운영체제의 할당을 받지 않은 빈 스레드 객체
 	thread th1([]
 		{
-			cout << "thread" << endl;
+			cout << "thread ID: " << this_thread::get_id() << endl;
+			this_thread::sleep_for(1s);
 		}); // callable 한 객체를 넣어 할당 요청
 	th1.join(); // thread가 끝날때까지 대기
+	cout << "Complete" << endl;
 }
